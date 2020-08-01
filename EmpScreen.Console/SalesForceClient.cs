@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace EmpScreen.Console
@@ -40,6 +41,20 @@ namespace EmpScreen.Console
             var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResponse);
             AuthToken = values["access_token"];
             InstanceUrl = values["instance_url"];
+        }
+
+        public string Query(string soqlQuery)
+        {
+            using (var client = new HttpClient())
+            {
+                string restRequest = InstanceUrl + API_ENDPOINT + "query/?q=" + soqlQuery;
+                var request = new HttpRequestMessage(HttpMethod.Get, restRequest);
+                request.Headers.Add("Authorization", "Bearer " + AuthToken);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                request.Headers.Add("X-PrettyPrint", "1");
+                var response = client.SendAsync(request).Result;
+                return response.Content.ReadAsStringAsync().Result;
+            }
         }
     }
 }

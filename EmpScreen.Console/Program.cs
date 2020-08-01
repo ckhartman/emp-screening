@@ -1,14 +1,36 @@
 ﻿using System;
 using eClearSdk;
 using System.Threading.Tasks;
+using System.Configuration;
 
 namespace EmpScreen.Console
 {
     class Program
     {
         private static IeClearSdk _eClearBusSdk;
+
+        private static SalesForceClient CreateClient()
+        {
+            return new SalesForceClient
+            {
+                Username = ConfigurationManager.AppSettings["username"],
+                Password = ConfigurationManager.AppSettings["password"],
+                Token = ConfigurationManager.AppSettings["token"],
+                ClientId = ConfigurationManager.AppSettings["clientId"],
+                ClientSecret = ConfigurationManager.AppSettings["clientSecret"]
+            };
+        }
+
         static async Task Main(string[] args)
         {
+            var client = CreateClient();
+
+            if (args.Length > 0)
+            {
+                client.Login();
+                System.Console.WriteLine(client.Query(args[0]));
+            }
+            System.Console.ReadLine();
             await AsyncMain();
         }
         static async Task AsyncMain()
@@ -20,6 +42,7 @@ namespace EmpScreen.Console
             _eClearBusSdk.Subscribe.FaceDetectedCallback((item =>
             {
                 // do something with the callback (face detection)
+                
 
                 System.Console.WriteLine($"Device: {item.Device.DeviceName}, Time: {item.DateTimeUtc}, Temp: {item.Attributes.PersonTemperature}");
             }));
@@ -31,6 +54,7 @@ namespace EmpScreen.Console
             // Cleanup - when you are shutting down, this will clear the connection resources
             _eClearBusSdk.Dispose();
         }
+
     }
 }
     
