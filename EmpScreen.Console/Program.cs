@@ -31,6 +31,7 @@ namespace EmpScreen.Console
                 System.Console.WriteLine(client.Query(args[0]));
             }
             System.Console.ReadLine();
+
             await AsyncMain();
         }
         static async Task AsyncMain()
