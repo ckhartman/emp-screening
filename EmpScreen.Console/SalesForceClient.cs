@@ -14,11 +14,11 @@ namespace EmpScreen.Console
 
         public string Username { get; set; }
         public string Password { get; set; }
-        public string Token { get; set; }
         public string ClientId { get; set; }
         public string ClientSecret { get; set; }
-        public string AuthToken { get; set; }
+        public static string AuthToken { get; set; }
         public string InstanceUrl { get; set; }
+        public string SecurityToken { get; set; }
 
         public void Login()
         {
@@ -31,10 +31,11 @@ namespace EmpScreen.Console
                 {"client_id", ClientId},
                 {"client_secret", ClientSecret},
                 {"username", Username},
-                {"password", Password + Token}
+                {"password", Password},
+                {"security_token", SecurityToken}
             }
                 );
-                request.Headers.Add("X-PrettyPrint", "1");
+                //request.Headers.Add("X-PrettyPrint", "1");
                 var response = client.PostAsync(LOGIN_ENDPOINT, request).Result;
                 jsonResponse = response.Content.ReadAsStringAsync().Result;
             }
@@ -43,15 +44,17 @@ namespace EmpScreen.Console
             InstanceUrl = values["instance_url"];
         }
 
-        public string Query(string soqlQuery)
+        public string Query(string content)
         {
             using (var client = new HttpClient())
             {
-                string restRequest = InstanceUrl + API_ENDPOINT + "query/?q=" + soqlQuery;
-                var request = new HttpRequestMessage(HttpMethod.Get, restRequest);
+                string restRequest = InstanceUrl + API_ENDPOINT;
+                var request = new HttpRequestMessage(HttpMethod.Post, restRequest);
                 request.Headers.Add("Authorization", "Bearer " + AuthToken);
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                request.Headers.Add("X-PrettyPrint", "1");
+                //request.Headers.Add("X-PrettyPrint", "1");
+                System.Net.Http.StringContent stringContent = new StringContent(content, UnicodeEncoding.UTF8,"application/json");
+                request.Content = stringContent;
                 var response = client.SendAsync(request).Result;
                 return response.Content.ReadAsStringAsync().Result;
             }
